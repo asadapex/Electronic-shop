@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
@@ -70,8 +71,13 @@ export class AuthService {
       });
       return { message: 'Verification code sent to your email' };
     } catch (error) {
+      if (error != InternalServerErrorException) {
+        throw error;
+      }
       console.log(error);
-      throw new BadRequestException({ message: 'Something went wrong' });
+      throw new InternalServerErrorException({
+        message: 'Something went wrong',
+      });
     }
   }
 
@@ -95,7 +101,10 @@ export class AuthService {
       return { mesage: 'Verified' };
     } catch (error) {
       console.log(error);
-      throw new BadRequestException({
+      if (error != InternalServerErrorException) {
+        throw error;
+      }
+      throw new InternalServerErrorException({
         message: 'Something went wrong please try again',
       });
     }
@@ -117,8 +126,13 @@ export class AuthService {
 
       return { message: 'Verification code sent to your email' };
     } catch (error) {
+      if (error != InternalServerErrorException) {
+        throw error;
+      }
       console.log(error);
-      throw new BadRequestException({ message: 'Something went wrong' });
+      throw new InternalServerErrorException({
+        message: 'Something went wrong',
+      });
     }
   }
 
@@ -144,8 +158,13 @@ export class AuthService {
 
       return { token };
     } catch (error) {
+      if (error != InternalServerErrorException) {
+        throw error;
+      }
       console.log(error);
-      throw new BadRequestException({ message: 'Something went wrong' });
+      throw new InternalServerErrorException({
+        message: 'Something went wrong',
+      });
     }
   }
 
@@ -166,8 +185,13 @@ export class AuthService {
       });
       return user;
     } catch (error) {
+      if (error != InternalServerErrorException) {
+        throw error;
+      }
       console.log(error);
-      throw new BadRequestException({ message: 'Something went wrong' });
+      throw new InternalServerErrorException({
+        message: 'Something went wrong',
+      });
     }
   }
 
@@ -192,8 +216,11 @@ export class AuthService {
 
       return { mesage: 'Password changed' };
     } catch (error) {
+      if (error != InternalServerErrorException) {
+        throw error;
+      }
       console.log(error);
-      throw new BadRequestException({
+      throw new InternalServerErrorException({
         message: 'Something went wrong please try again',
       });
     }

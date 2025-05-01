@@ -3,6 +3,8 @@
 /node_modules
 /build
 
+token.txt
+
 # Logs
 logs
 *.log

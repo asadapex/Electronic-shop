@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ProducStatus } from '@prisma/client';
+import { CategoryEnum, ProducStatus } from '@prisma/client';
 import {
   IsEnum,
   IsNumber,
@@ -48,11 +48,24 @@ export class CreateProductDto {
   @Min(1)
   count: number;
 
+  @ApiProperty({ example: [1, 2], required: true })
+  @IsNumber()
+  @Min(1)
+  Color: number[];
+
   @ApiProperty({ type: Number, example: 10, required: true })
   @IsNumber()
   @Min(0)
   @Max(100)
   discount: number;
+
+  @ApiProperty({
+    enum: CategoryEnum,
+    example: CategoryEnum.Phone,
+    required: true,
+  })
+  @IsEnum(CategoryEnum)
+  type: CategoryEnum;
 
   @ApiProperty({ type: Number, example: 1, required: true })
   @IsNumber()

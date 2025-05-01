@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -20,6 +21,14 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto) {
     try {
+      const region = await this.prisma.region.findUnique({
+        where: { id: createUserDto.regionId },
+      });
+
+      if (!region) {
+        throw new NotFoundException({ message: 'Region not found' });
+      }
+
       const user = await this.findUser(createUserDto.email);
       if (user) {
         throw new BadRequestException({ message: 'User already exists' });
@@ -31,6 +40,9 @@ export class UserService {
       });
       return newUser;
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       console.log(error);
       throw new BadRequestException({ message: 'Something went wrong' });
     }
@@ -90,34 +102,64 @@ export class UserService {
   }
 
   async findOne(id: number) {
-    const one = await this.prisma.user.findUnique({
-      where: { id },
-      include: { region: true },
-    });
-    if (!one) {
-      throw new NotFoundException({ message: 'User not found' });
+    try {
+      const one = await this.prisma.user.findUnique({
+        where: { id },
+        include: { region: true },
+      });
+      if (!one) {
+        throw new NotFoundException({ message: 'User not found' });
+      }
+      return one;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.log(error);
+      throw new InternalServerErrorException({
+        message: 'Something went wrong',
+      });
     }
-    return one;
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const updated = await this.prisma.user.update({
-      where: { id },
-      data: updateUserDto,
-    });
+    try {
+      const updated = await this.prisma.user.update({
+        where: { id },
+        data: updateUserDto,
+      });
 
-    if (!updated) {
-      throw new NotFoundException({ message: 'User not found' });
+      if (!updated) {
+        throw new NotFoundException({ message: 'User not found' });
+      }
+
+      return updated;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.log(error);
+      throw new InternalServerErrorException({
+        message: 'Something went wrong',
+      });
     }
-
-    return updated;
   }
 
   async remove(id: number) {
-    const deleted = await this.prisma.user.delete({ where: { id } });
-    if (!deleted) {
-      throw new NotFoundException({ message: 'User not found' });
+    try {
+      const deleted = await this.prisma.user.delete({ where: { id } });
+      if (!deleted) {
+        throw new NotFoundException({ message: 'User not found' });
+      }
+      return deleted;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.log(error);
+      throw new InternalServerErrorException({
+        message: 'Something went wrong',
+      });
     }
-    return deleted;
   }
 }

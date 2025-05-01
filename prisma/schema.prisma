@@ -30,6 +30,13 @@ enum UserStatus {
   PENDING
 }
 
+enum CategoryEnum {
+  Phone
+  Electronics
+  Laptops
+  Accessories
+}
+
 model Region {
   id   Int    @id @default(autoincrement())
   name String
@@ -47,7 +54,7 @@ model User {
   region          Region        @relation(fields: [regionId], references: [id])
   regionId        Int
   status          UserStatus
-  Products        Products[]
+  Products        Product[]
   Sessions        Sessions[]
   Likes           Likes[]
   Views           Views[]
@@ -60,59 +67,45 @@ model User {
   createdAt       DateTime      @default(now())
 }
 
-model BigCategory {
-  id         Int        @id @default(autoincrement())
-  name       String
-  categories Category[]
-  createdAt  DateTime   @default(now())
-}
+model Product {
+  id          Int          @id @default(autoincrement())
+  photo       String?
+  name        String
+  description String
+  status      ProducStatus
+  price       Int
+  count       Int
+  discount    Int
+  type        CategoryEnum
+  user        User         @relation(fields: [userId], references: [id])
+  userId      Int
+  category    Category     @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  color       Color[]      @relation("ColorProduct")
 
-model Products {
-  id           Int            @id @default(autoincrement())
-  photo        String?
-  name         String
-  description  String
-  status       ProducStatus
-  price        Int
-  count        Int
-  discount     Int
-  user         User           @relation(fields: [userId], references: [id])
-  userId       Int
-  category     Category       @relation(fields: [categoryId], references: [id])
-  categoryId   Int
-  ColorProduct ColorProduct[]
-  Likes        Likes[]
-  Views        Views[]
-  Order        Order[]
-  Comments     Comments[]
-  createdAt    DateTime       @default(now())
+  Likes     Likes[]
+  Views     Views[]
+  Order     Order[]
+  Comments  Comments[]
+  createdAt DateTime   @default(now())
 }
 
 model Category {
-  id            Int         @id @default(autoincrement())
-  name          String
-  photo         String?
-  BigCategory   BigCategory @relation(fields: [bigCategoryId], references: [id])
-  bigCategoryId Int
-  Products      Products[]
-  createdAt     DateTime    @default(now())
+  id        Int          @id @default(autoincrement())
+  name      String
+  photo     String?
+  type      CategoryEnum
+  Products  Product[]
+  createdAt DateTime     @default(now())
 }
 
 model Color {
-  id           Int            @id @default(autoincrement())
-  name         String
-  ColorProduct ColorProduct[]
-  Order        Order[]
-  createdAt    DateTime       @default(now())
-}
+  id      Int       @id @default(autoincrement())
+  name    String
+  Product Product[] @relation("ColorProduct")
 
-model ColorProduct {
-  id         Int      @id @default(autoincrement())
-  product    Products @relation(fields: [productsId], references: [id])
-  productsId Int
-  color      Color    @relation(fields: [colorId], references: [id])
-  colorId    Int
-  createdAt  DateTime @default(now())
+  Order     Order[]
+  createdAt DateTime @default(now())
 }
 
 model Sessions {
@@ -125,44 +118,47 @@ model Sessions {
 }
 
 model Likes {
-  id         Int      @id @default(autoincrement())
-  product    Products @relation(fields: [productsId], references: [id])
-  productsId Int
-  user       User     @relation(fields: [userId], references: [id])
-  userId     Int
-  createdAt  DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime @default(now())
 }
 
 model Views {
-  id         Int      @id @default(autoincrement())
-  user       User     @relation(fields: [userId], references: [id])
-  userId     Int
-  product    Products @relation(fields: [productsId], references: [id])
-  productsId Int
-  createdAt  DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  createdAt DateTime @default(now())
 }
 
 model Order {
-  id         Int      @id @default(autoincrement())
-  product    Products @relation(fields: [productsId], references: [id])
-  productsId Int
-  user       User     @relation(fields: [userId], references: [id])
-  userId     Int
-  count      Int
-  color      Color    @relation(fields: [colorId], references: [id])
-  colorId    Int
-  createdAt  DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  count     Int
+  color     Color    @relation(fields: [colorId], references: [id])
+  colorId   Int
+  createdAt DateTime @default(now())
 }
 
 model Comments {
-  id         Int      @id @default(autoincrement())
-  product    Products @relation(fields: [productsId], references: [id])
-  productsId Int
-  user       User     @relation(fields: [userId], references: [id])
-  userId     Int
-  text       String
-  star       Int
-  createdAt  DateTime @default(now())
+  id        Int     @id @default(autoincrement())
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  text String
+  star Int
+
+  createdAt DateTime @default(now())
 }
 
 model Chat {
