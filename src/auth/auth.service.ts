@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -16,6 +17,7 @@ import { ResendOtpAuthDto } from './dto/resendotp-auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { ResetPasswordAuthDto } from './dto/resetpassword-auth.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 totp.options = {
   digits: 5,
@@ -46,6 +48,24 @@ export class AuthService {
     `;
   }
 
+  async generateRefreshToken(user: { id: number; role: string }) {
+    const payload = { id: user.id, role: user.role };
+    const refresh_token = await this.jwt.signAsync(payload, {
+      expiresIn: '7d',
+    });
+
+    return refresh_token;
+  }
+
+  async generateAccessToken(user: { id: number; role: string }) {
+    const payload = { id: user.id, role: user.role };
+    const access_token = await this.jwt.signAsync(payload, {
+      expiresIn: '15m',
+    });
+
+    return access_token;
+  }
+
   async findUser(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     return user;
@@ -67,7 +87,12 @@ export class AuthService {
 
       const hash = bcrypt.hashSync(dto.password, 10);
       await this.prisma.user.create({
-        data: { ...dto, status: UserStatus.PENDING, password: hash },
+        data: {
+          ...dto,
+          status: UserStatus.PENDING,
+          password: hash,
+          role: 'USER',
+        },
       });
       return { message: 'Verification code sent to your email' };
     } catch (error) {
@@ -107,6 +132,31 @@ export class AuthService {
       throw new InternalServerErrorException({
         message: 'Something went wrong please try again',
       });
+    }
+  }
+
+  async refreshToken(data: RefreshTokenDto) {
+    try {
+      const a = this.jwt.verify(data.refresh_token);
+      const user = await this.prisma.user.findUnique({
+        where: { id: a.id },
+      });
+
+      if (!user) {
+        throw new NotFoundException({ message: 'User not found' });
+      }
+
+      const access_token = await this.generateAccessToken({
+        id: user.id,
+        role: user.role,
+      });
+
+      return { access_token };
+    } catch (error) {
+      if (error != UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException({ message: 'Wrong credentials' });
     }
   }
 
@@ -154,8 +204,6 @@ export class AuthService {
         });
       }
 
-      const token = this.jwt.sign({ id: user.id, role: user.role });
-
       const session = await this.prisma.sessions.findFirst({
         where: { userId: user.id, ip: req.ip },
       });
@@ -169,7 +217,17 @@ export class AuthService {
         });
       }
 
-      return { token };
+      const access_token = await this.generateAccessToken({
+        id: user.id,
+        role: user.role,
+      });
+
+      const refresh_token = await this.generateRefreshToken({
+        id: user.id,
+        role: user.role,
+      });
+
+      return { access_token, refresh_token };
     } catch (error) {
       if (error != InternalServerErrorException) {
         throw error;

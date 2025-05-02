@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   CanActivate,
   ExecutionContext,
   Injectable,
@@ -35,13 +36,15 @@ export class AuthguardGuard implements CanActivate {
       });
 
       if (!session) {
-        throw new UnauthorizedException({
+        throw new BadRequestException({
           message: 'Please log in again to your account',
         });
       }
-
       return true;
     } catch (error) {
+      if (error != UnauthorizedException) {
+        throw error;
+      }
       throw new UnauthorizedException({ message: 'Wrong credentials' });
     }
   }

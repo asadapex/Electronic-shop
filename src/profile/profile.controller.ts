@@ -36,4 +36,10 @@ export class ProfileController {
   findMyChats(@Req() req: Request) {
     return this.profileService.findMyChats(req);
   }
+
+  @UseGuards(AuthguardGuard)
+  @Get('my-messages')
+  findMyMessages(@Req() req: Request) {
+    return this.profileService.findMyMessages(req);
+  }
 }

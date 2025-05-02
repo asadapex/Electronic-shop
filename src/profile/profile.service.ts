@@ -94,7 +94,26 @@ export class ProfileService {
         include: {
           fromUser: { select: { id: true, firstname: true, email: true } },
           toUser: { select: { id: true, firstname: true, email: true } },
-          ChatMessage: true,
+        },
+      });
+      return chats;
+    } catch (error) {
+      if (error != InternalServerErrorException) {
+        throw error;
+      }
+      throw new InternalServerErrorException({
+        message: 'Something went wrong',
+      });
+    }
+  }
+
+  async findMyMessages(req: Request) {
+    try {
+      const chats = await this.prisma.chatMessage.findMany({
+        where: { OR: [{ fromId: req['user-id'] }, { toId: req['user-id'] }] },
+        include: {
+          fromUser: { select: { id: true, firstname: true, email: true } },
+          toUser: { select: { id: true, firstname: true, email: true } },
         },
       });
       return chats;

@@ -15,6 +15,7 @@ import { ResendOtpAuthDto } from './dto/resendotp-auth.dto';
 import { AuthguardGuard } from 'src/authguard/authguard.guard';
 import { Request } from 'express';
 import { ResetPasswordAuthDto } from './dto/resetpassword-auth.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -33,6 +34,11 @@ export class AuthController {
   @Post('resend-otp')
   resendOtp(@Body() data: ResendOtpAuthDto) {
     return this.authService.resendOtp(data);
+  }
+
+  @Post('refresh-token')
+  refreshToken(@Body() data: RefreshTokenDto) {
+    return this.authService.refreshToken(data);
   }
 
   @Post('login')

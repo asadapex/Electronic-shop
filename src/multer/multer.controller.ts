@@ -2,17 +2,15 @@ import {
   Controller,
   Post,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
-import { AuthguardGuard } from 'src/authguard/authguard.guard';
 
 @Controller('file')
 export class MulterController {
-  @UseGuards(AuthguardGuard)
   @Post()
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -30,13 +28,22 @@ export class MulterController {
     FileInterceptor('file', {
       storage: diskStorage({
         destination: './uploads',
-        filename: (req, file, cal) => {
-          cal(null, `${Math.random()}-${file.originalname}`);
+        filename: (req, file, cb) => {
+          const uniqueName = `${Date.now()}-${Math.round(
+            Math.random() * 1e9,
+          )}-${file.originalname}`;
+          cb(null, uniqueName);
         },
       }),
     }),
   )
   uploadFile(@UploadedFile() file: Express.Multer.File) {
-    return { url: `http://3.75.170.27:3000/file/${file.filename}` };
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
+    return {
+      url: `http://3.75.170.27:3000/file/${file.filename}`,
+    };
   }
 }
