@@ -36,6 +36,8 @@ export class ProductController {
   @ApiQuery({ name: 'minPrice', type: Number, required: false })
   @ApiQuery({ name: 'maxPrice', type: Number, required: false })
   @ApiQuery({ name: 'sortPrice', enum: SortOrder, required: false })
+  @ApiQuery({ name: 'color', type: String, default: 'Qizil', required: false })
+  @ApiQuery({ name: 'categoryId', type: Number, default: 1, required: false })
   @ApiQuery({ name: 'limit', type: Number, default: 10, required: false })
   @ApiQuery({ name: 'page', type: Number, default: 1, required: false })
   findAll(@Query() query: any) {

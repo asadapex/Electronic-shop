@@ -71,6 +71,8 @@ export class ProductService {
         minPrice,
         maxPrice,
         sortPrice = 'asc',
+        color,
+        categoryId,
         page = 1,
         limit = 10,
       } = query;
@@ -79,6 +81,14 @@ export class ProductService {
 
       if (name) {
         where.name = { contains: name, mode: 'insensitive' };
+      }
+
+      if (color) {
+        where.Color = { name: { equals: query.color, mode: 'insensitive' } };
+      }
+
+      if (categoryId) {
+        where.categoryId = Number(query.categoryId);
       }
 
       if (minPrice || maxPrice) {
