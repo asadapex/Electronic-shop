@@ -59,11 +59,14 @@ export class CommentService {
 
   async findOne(id: number) {
     try {
-      const all = await this.prisma.comments.findUnique({
+      const one = await this.prisma.comments.findUnique({
         where: { id },
         include: { user: true, product: true },
       });
-      return all;
+      if (!one) {
+        throw new NotFoundException({ message: 'Comment not found' });
+      }
+      return one;
     } catch (error) {
       if (error != InternalServerErrorException) {
         throw error;
@@ -78,6 +81,10 @@ export class CommentService {
   async update(id: number, updateCommentDto: UpdateCommentDto, req: Request) {
     try {
       if (req['user-role'] == 'ADMIN') {
+        const exists = await this.prisma.comments.findUnique({ where: { id } });
+        if (!exists) {
+          throw new NotFoundException({ message: 'Comment not found' });
+        }
         const updated = await this.prisma.comments.update({
           where: { id },
           data: updateCommentDto,
@@ -86,6 +93,10 @@ export class CommentService {
           throw new NotFoundException({ message: 'Comment not found' });
         }
         return updated;
+      }
+      const exists = await this.prisma.comments.findUnique({ where: { id } });
+      if (!exists) {
+        throw new NotFoundException({ message: 'Comment not found' });
       }
       const updated = await this.prisma.comments.update({
         where: { id, userId: req['user-id'] },
@@ -109,11 +120,19 @@ export class CommentService {
   async remove(id: number, req: Request) {
     try {
       if (req['user-role'] == 'ADMIN') {
+        const exists = await this.prisma.comments.findUnique({ where: { id } });
+        if (!exists) {
+          throw new NotFoundException({ message: 'Comment not found' });
+        }
         const deleted = await this.prisma.comments.delete({ where: { id } });
         if (!deleted) {
           throw new NotFoundException({ message: 'Comment not found' });
         }
         return deleted;
+      }
+      const exists = await this.prisma.comments.findUnique({ where: { id } });
+      if (!exists) {
+        throw new NotFoundException({ message: 'Comment not found' });
       }
       const deleted = await this.prisma.comments.delete({
         where: { id, userId: req['user-id'] },

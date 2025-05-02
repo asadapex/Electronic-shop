@@ -105,6 +105,10 @@ export class CategoryService {
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
     try {
+      const exists = await this.prisma.category.findUnique({ where: { id } });
+      if (!exists) {
+        throw new NotFoundException({ message: 'Category not found' });
+      }
       const updated = await this.prisma.category.update({
         where: { id },
         data: updateCategoryDto,
@@ -126,6 +130,10 @@ export class CategoryService {
 
   async remove(id: number) {
     try {
+      const exists = await this.prisma.category.findUnique({ where: { id } });
+      if (!exists) {
+        throw new NotFoundException({ message: 'Category not found' });
+      }
       const deleted = await this.prisma.category.delete({ where: { id } });
       if (!deleted) {
         throw new NotFoundException('Category not found');

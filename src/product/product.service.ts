@@ -38,7 +38,7 @@ export class ProductService {
         data: {
           ...createProductDto,
           userId: req['user-id'],
-          color: { connect: createProductDto.Color.map((id) => ({ id })) },
+          Color: { connect: createProductDto.Color.map((id) => ({ id })) },
         },
         include: {
           user: {
@@ -121,17 +121,40 @@ export class ProductService {
               star: true,
             },
           },
-          color: true,
+          Color: true,
         },
         orderBy,
         skip,
         take,
       });
 
+      const productsWithAvgStars = all.map((product) => {
+        const stars = product.Comments.map((comment) => comment.star);
+        const averageStar =
+          stars.length > 0
+            ? Number(
+                (
+                  stars.reduce((sum, star) => sum + star, 0) / stars.length
+                ).toFixed(1),
+              )
+            : 0;
+
+        const discount = product.discount || 0;
+        const finalPrice = discount
+          ? Number((product.price * (1 - discount / 100)).toFixed(2))
+          : product.price;
+
+        return {
+          ...product,
+          averageStar,
+          finalPrice,
+        };
+      });
+
       const total = await this.prisma.product.count({ where });
 
       return {
-        data: all,
+        data: productsWithAvgStars,
         total,
         page: Number(page),
         limit: Number(limit),
@@ -160,24 +183,46 @@ export class ProductService {
               star: true,
             },
           },
-          color: true,
+          Color: true,
         },
       });
+
       if (!one) {
         throw new NotFoundException({ message: 'Product not found' });
       }
+
+      const stars = one.Comments.map((comment) => comment.star);
+      const averageStar =
+        stars.length > 0
+          ? Number(
+              (
+                stars.reduce((sum, star) => sum + star, 0) / stars.length
+              ).toFixed(1),
+            )
+          : 0;
+
+      const discount = one.discount || 0;
+      const finalPrice = discount
+        ? Number((one.price * (1 - discount / 100)).toFixed(2))
+        : one.price;
+
       if (req['user-id']) {
         const viewed = await this.prisma.views.findFirst({
           where: { productId: id, userId: req['user-id'] },
         });
+
         if (!viewed) {
           await this.prisma.views.create({
             data: { productId: id, userId: req['user-id'] },
           });
         }
-        return one;
       }
-      return one;
+
+      return {
+        ...one,
+        averageStar,
+        finalPrice,
+      };
     } catch (error) {
       if (error != InternalServerErrorException) {
         throw error;
@@ -190,19 +235,44 @@ export class ProductService {
   async update(id: number, updateProductDto: UpdateProductDto, req: Request) {
     try {
       if (req['user-role'] == 'ADMIN' || req['user-role'] == 'SUPERADMIN') {
+        const existingProduct = await this.prisma.product.findUnique({
+          where: { id },
+        });
+
+        if (!existingProduct) {
+          throw new NotFoundException('Product not found');
+        }
         const updated = await this.prisma.product.update({
           where: { id },
-          data: updateProductDto,
+          data: {
+            ...updateProductDto,
+            Color: {
+              set: updateProductDto.Color?.map((id) => ({ id })),
+            },
+          },
         });
+
         if (!updated) {
           throw new NotFoundException({ message: 'Product not found' });
         }
         return updated;
       }
 
+      const existingProduct = await this.prisma.product.findUnique({
+        where: { id },
+      });
+
+      if (!existingProduct) {
+        throw new NotFoundException('Product not found');
+      }
       const updated = await this.prisma.product.update({
-        where: { id, userId: req['user-id'] },
-        data: updateProductDto,
+        where: { id },
+        data: {
+          ...updateProductDto,
+          Color: {
+            set: updateProductDto.Color?.map((id) => ({ id })),
+          },
+        },
       });
       if (!updated) {
         throw new NotFoundException({ message: 'Product not found' });
@@ -220,11 +290,19 @@ export class ProductService {
   async remove(id: number, req: Request) {
     try {
       if (req['user-role'] == 'ADMIN') {
+        const exists = await this.prisma.product.findUnique({ where: { id } });
+        if (!exists) {
+          throw new NotFoundException({ message: 'Product not found' });
+        }
         const deleted = await this.prisma.product.delete({ where: { id } });
         if (!deleted) {
           throw new NotFoundException({ message: 'Product not found' });
         }
         return deleted;
+      }
+      const exists = await this.prisma.product.findUnique({ where: { id } });
+      if (!exists) {
+        throw new NotFoundException({ message: 'Product not found' });
       }
       const deleted = await this.prisma.product.delete({
         where: { id, userId: req['user-id'] },

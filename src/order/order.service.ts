@@ -111,34 +111,22 @@ export class OrderService {
     }
   }
 
-  async update(id: number, dto: any) {
-    try {
-      const updated = await this.prisma.order.update({
-        where: { id },
-        data: { ...dto },
-      });
-      if (!updated) {
-        throw new NotFoundException({ message: 'Order not found' });
-      }
-      return updated;
-    } catch (error) {
-      if (error != InternalServerErrorException) {
-        throw error;
-      }
-      throw new InternalServerErrorException({
-        message: 'Something went wrong',
-      });
-    }
-  }
-
   async remove(id: number, req: Request) {
     try {
       if (req['user-role'] == 'ADMIN') {
+        const exists = await this.prisma.order.findUnique({ where: { id } });
+        if (!exists) {
+          throw new NotFoundException({ message: 'Order not found' });
+        }
         const deleted = await this.prisma.order.delete({ where: { id } });
         if (!deleted) {
           throw new NotFoundException({ message: 'Order not found' });
         }
         return deleted;
+      }
+      const exists = await this.prisma.order.findUnique({ where: { id } });
+      if (!exists) {
+        throw new NotFoundException({ message: 'Order not found' });
       }
       const order = await this.prisma.order.findFirst({
         where: { userId: req['user-id'], productId: id },

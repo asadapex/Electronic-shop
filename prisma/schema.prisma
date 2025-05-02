@@ -81,7 +81,7 @@ model Product {
   userId      Int
   category    Category     @relation(fields: [categoryId], references: [id])
   categoryId  Int
-  color       Color[]      @relation("ColorProduct")
+  Color       Color[]      @relation("ColorProduct")
   Likes       Likes[]
   Views       Views[]
   Order       Order[]
@@ -163,12 +163,13 @@ model Comments {
 }
 
 model Chat {
-  id        Int      @id @default(autoincrement())
-  fromUser  User     @relation("FromUser", fields: [fromId], references: [id])
-  fromId    Int
-  toUser    User     @relation("ToUser", fields: [toId], references: [id])
-  toId      Int
-  createdAt DateTime @default(now())
+  id          Int           @id @default(autoincrement())
+  fromUser    User          @relation("FromUser", fields: [fromId], references: [id])
+  fromId      Int
+  toUser      User          @relation("ToUser", fields: [toId], references: [id])
+  toId        Int
+  createdAt   DateTime      @default(now())
+  ChatMessage ChatMessage[]
 }
 
 model ChatMessage {
@@ -177,5 +178,8 @@ model ChatMessage {
   fromId    Int
   toUser    User     @relation("ToUser", fields: [toId], references: [id])
   toId      Int
+  text      String
+  chat      Chat     @relation(fields: [chatId], references: [id])
   createdAt DateTime @default(now())
+  chatId    Int
 }

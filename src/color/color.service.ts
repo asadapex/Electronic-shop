@@ -36,6 +36,10 @@ export class ColorService {
   }
 
   async update(id: number, updateColorDto: UpdateColorDto) {
+    const exists = await this.prisma.color.findUnique({ where: { id } });
+    if (!exists) {
+      throw new NotFoundException({ message: 'Color not found' });
+    }
     const updated = await this.prisma.color.update({
       where: { id },
       data: updateColorDto,
@@ -47,6 +51,10 @@ export class ColorService {
   }
 
   async remove(id: number) {
+    const exists = await this.prisma.color.findUnique({ where: { id } });
+    if (!exists) {
+      throw new NotFoundException({ message: 'Color not found' });
+    }
     const deleted = await this.prisma.color.delete({ where: { id } });
     if (!deleted) {
       throw new NotFoundException({ message: 'Color not found' });

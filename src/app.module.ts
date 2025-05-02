@@ -16,8 +16,6 @@ import { MulterModule } from './multer/multer.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ChatModule } from './chat/chat.module';
-import { DeviceDetectorService } from './device-detector/device-detector.service';
-import { DeviceDetectorModule } from './device-detector/device-detector.module';
 
 @Module({
   imports: [
@@ -37,9 +35,8 @@ import { DeviceDetectorModule } from './device-detector/device-detector.module';
       serveRoot: '/file',
     }),
     ChatModule,
-    DeviceDetectorModule,
   ],
   controllers: [AppController],
-  providers: [AppService, MailerService, DeviceDetectorService],
+  providers: [AppService, MailerService],
 })
 export class AppModule {}
