@@ -24,6 +24,16 @@ export class ProductService {
         throw new NotFoundException({ message: 'Category not found' });
       }
 
+      const colors = await this.prisma.color.findMany({
+        where: { id: { in: createProductDto.Color } },
+      });
+
+      if (colors.length !== createProductDto.Color.length) {
+        throw new NotFoundException({
+          message: 'One or more colors not found',
+        });
+      }
+
       const newPrd = await this.prisma.product.create({
         data: {
           ...createProductDto,
@@ -111,6 +121,7 @@ export class ProductService {
               star: true,
             },
           },
+          color: true,
         },
         orderBy,
         skip,
@@ -149,6 +160,7 @@ export class ProductService {
               star: true,
             },
           },
+          color: true,
         },
       });
       if (!one) {

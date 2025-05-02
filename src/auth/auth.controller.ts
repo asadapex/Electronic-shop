@@ -28,8 +28,8 @@ export class AuthController {
   }
 
   @Post('login')
-  login(@Body() data: LoginAuthDto) {
-    return this.authService.login(data);
+  login(@Body() data: LoginAuthDto, @Req() req: Request) {
+    return this.authService.login(data, req);
   }
 
   @Post('reset-password')

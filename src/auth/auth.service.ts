@@ -16,6 +16,7 @@ import { ResendOtpAuthDto } from './dto/resendotp-auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { ResetPasswordAuthDto } from './dto/resetpassword-auth.dto';
+import DeviceDetector from 'device-detector-js';
 
 totp.options = {
   digits: 5,
@@ -28,6 +29,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly mailService: MailerService,
     private readonly jwt: JwtService,
+    private readonly device: DeviceDetector,
   ) {}
 
   generateOtpHtml(code: string): string {
@@ -136,7 +138,7 @@ export class AuthService {
     }
   }
 
-  async login(dto: LoginAuthDto) {
+  async login(dto: LoginAuthDto, req: Request) {
     try {
       const user = await this.findUser(dto.email);
       if (!user) {
@@ -151,6 +153,25 @@ export class AuthService {
       if (user.status == 'PENDING') {
         throw new BadRequestException({
           message: "You haven't verified yet please verify",
+        });
+      }
+
+      const session = await this.prisma.sessions.findFirst({
+        where: { userId: user.id, ip: req.ip },
+      });
+
+      if (!session) {
+        const userAgent = req.headers['user-agent'] || '';
+        const deviceInfo = this.device.parse(userAgent);
+
+        await this.prisma.sessions.create({
+          data: {
+            userId: user.id,
+            ip: req.ip,
+            device: deviceInfo.device?.type || 'Unknown Device',
+            os: deviceInfo.os?.name || 'Unknown OS',
+            browser: deviceInfo.client?.name || 'Unknown Browser',
+          },
         });
       }
 

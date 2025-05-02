@@ -9,10 +9,37 @@ import { RegionModule } from './region/region.module';
 import { ProductModule } from './product/product.module';
 import { CategoryModule } from './category/category.module';
 import { CommentModule } from './comment/comment.module';
+import { ColorModule } from './color/color.module';
+import { OrderModule } from './order/order.module';
+import { ProfileModule } from './profile/profile.module';
+import { MulterModule } from './multer/multer.module';
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { ChatModule } from './chat/chat.module';
+import { DeviceDetectorService } from './device-detector/device-detector.service';
+import { DeviceDetectorModule } from './device-detector/device-detector.module';
 
 @Module({
-  imports: [UserModule, AuthModule, PrismaModule, RegionModule, ProductModule, CategoryModule, CommentModule],
+  imports: [
+    UserModule,
+    AuthModule,
+    PrismaModule,
+    RegionModule,
+    ProductModule,
+    CategoryModule,
+    CommentModule,
+    ColorModule,
+    OrderModule,
+    ProfileModule,
+    MulterModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/file',
+    }),
+    ChatModule,
+    DeviceDetectorModule,
+  ],
   controllers: [AppController],
-  providers: [AppService, MailerService],
+  providers: [AppService, MailerService, DeviceDetectorService],
 })
 export class AppModule {}
