@@ -37,6 +37,6 @@ export class MulterController {
     }),
   )
   uploadFile(@UploadedFile() file: Express.Multer.File) {
-    return { url: `http://localhost:3000/file/${file.filename}` };
+    return { url: `http://3.75.170.27:3000/file/${file.filename}` };
   }
 }

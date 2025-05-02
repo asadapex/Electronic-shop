@@ -28,17 +28,11 @@ export class RegionController {
     return this.regionService.create(createRegionDto);
   }
 
-  @Roles(UserRoles.ADMIN)
-  @UseGuards(RolesGuard)
-  @UseGuards(AuthguardGuard)
   @Get()
   findAll() {
     return this.regionService.findAll();
   }
 
-  @Roles(UserRoles.ADMIN)
-  @UseGuards(RolesGuard)
-  @UseGuards(AuthguardGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.regionService.findOne(+id);

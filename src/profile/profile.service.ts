@@ -94,6 +94,7 @@ export class ProfileService {
         include: {
           fromUser: { select: { id: true, firstname: true, email: true } },
           toUser: { select: { id: true, firstname: true, email: true } },
+          ChatMessage: true,
         },
       });
       return chats;
