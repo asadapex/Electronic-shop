@@ -156,6 +156,19 @@ export class AuthService {
 
       const token = this.jwt.sign({ id: user.id, role: user.role });
 
+      const session = await this.prisma.sessions.findFirst({
+        where: { userId: user.id, ip: req.ip },
+      });
+
+      if (!session) {
+        await this.prisma.sessions.create({
+          data: {
+            ip: req.ip,
+            userId: user.id,
+          },
+        });
+      }
+
       return { token };
     } catch (error) {
       if (error != InternalServerErrorException) {

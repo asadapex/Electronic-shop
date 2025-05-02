@@ -16,6 +16,8 @@ import { MulterModule } from './multer/multer.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ChatModule } from './chat/chat.module';
+import { AdminModule } from './admin/admin.module';
+import { SessionModule } from './session/session.module';
 
 @Module({
   imports: [
@@ -35,6 +37,8 @@ import { ChatModule } from './chat/chat.module';
       serveRoot: '/file',
     }),
     ChatModule,
+    AdminModule,
+    SessionModule,
   ],
   controllers: [AppController],
   providers: [AppService, MailerService],
