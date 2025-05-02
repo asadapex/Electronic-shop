@@ -18,6 +18,7 @@ import { AuthguardGuard } from 'src/authguard/authguard.guard';
 import { ApiQuery } from '@nestjs/swagger';
 import { SortOrder } from 'src/enums';
 import { ViewGuard } from 'src/view/view.guard';
+import { CategoryEnum } from '@prisma/client';
 
 @Controller('product')
 export class ProductController {
@@ -36,6 +37,7 @@ export class ProductController {
   @ApiQuery({ name: 'minPrice', type: Number, required: false })
   @ApiQuery({ name: 'maxPrice', type: Number, required: false })
   @ApiQuery({ name: 'sortPrice', enum: SortOrder, required: false })
+  @ApiQuery({ name: 'type', enum: CategoryEnum, required: false })
   @ApiQuery({ name: 'color', type: String, default: 'Qizil', required: false })
   @ApiQuery({ name: 'categoryId', type: Number, default: 1, required: false })
   @ApiQuery({ name: 'limit', type: Number, default: 10, required: false })

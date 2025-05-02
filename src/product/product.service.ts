@@ -73,6 +73,7 @@ export class ProductService {
         sortPrice = 'asc',
         color,
         categoryId,
+        type,
         page = 1,
         limit = 10,
       } = query;
@@ -81,6 +82,12 @@ export class ProductService {
 
       if (name) {
         where.name = { contains: name, mode: 'insensitive' };
+      }
+
+      if (type) {
+        where.category = {
+          type,
+        };
       }
 
       if (color) {
